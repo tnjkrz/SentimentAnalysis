@@ -1,17 +1,12 @@
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.handshake.ServerHandshake;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class WebSocketClientHandler extends WebSocketClient {
-
-    private static final Logger logger = LoggerFactory.getLogger(WebSocketClientHandler.class);
 
     private final BlockingQueue<String> buffer;
     private boolean isFirstMessage = true; // to track first message
@@ -31,12 +26,12 @@ public class WebSocketClientHandler extends WebSocketClient {
 
     @Override
     public void onClose(int code, String reason, boolean remote) {
-        //logger.info("Connection closed with exit code: {}. Reason: {}", code, reason);
+        //System.out.println("Connection closed with exit code " + code + " and reason: " + reason);
     }
 
     @Override
     public void onError(Exception ex) {
-        logger.error("An error occurred: {}", ex.getMessage(), ex);
+        System.err.println("An error occurred: " + ex.getMessage());
     }
 
     @Override
@@ -55,13 +50,11 @@ public class WebSocketClientHandler extends WebSocketClient {
             }
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
-            logger.error("Error adding message to buffer: {}", e.getMessage(), e);
+            System.err.println("Error adding message to buffer: " + e.getMessage());
         }
     }
 
-    public static BlockingQueue<String> connectAndReceiveMessages(int maxReviews, String[] topics) {
-        BlockingQueue<String> buffer = new LinkedBlockingQueue<>();
-
+    public static void connectAndReceiveMessages(int maxReviews, String[] topics, BlockingQueue<String> buffer) {
         try {
             URI uri = new URI("wss://prog3.student.famnit.upr.si/sentiment");
 
@@ -72,17 +65,16 @@ public class WebSocketClientHandler extends WebSocketClient {
             for (String topic : topics) {
                 String subscriptionMessage = "topic:" + topic.trim();
                 client.send(subscriptionMessage);
-                //logger.info("Subscribed to topic: {}", topic.trim());
+                System.out.println("Subscribed to topic: " + topic.trim());
             }
 
+            // keep connection open (caused errors otherwise)
             while (client.isOpen()) {
                 Thread.sleep(100);
             }
 
         } catch (URISyntaxException | InterruptedException e) {
-            logger.error("An error occurred: {}", e.getMessage(), e);
+            System.err.println("An error occurred: " + e.getMessage());
         }
-
-        return buffer;
     }
 }

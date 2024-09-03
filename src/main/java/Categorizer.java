@@ -7,28 +7,48 @@ public class Categorizer {
     private final Map<String, ProductSummary> asinToProductMap = new ConcurrentHashMap<>();
 
     public void categorizeReviews(List<String[]> analyzedData) {
+        System.out.println("Starting categorization process...");
+
         // loop through each review in analyzed data
         for (String[] review : analyzedData) {
             String asin = review[2];                            // asin
             String category = review[0];                        // category
             String overallScore = review[1];                    // overall (score)
             int sentiment = Integer.parseInt(review[3]);        // sentiment score (1-5)
-            String[] topics = review[4].split(", ");      // topics/nouns
-            String[] adjectives = review[5].split(", ");  // adjectives
+
+            String[] topics;
+            if (review[4].equals("NO_TOPICS")) {
+                topics = new String[0];
+            } else {
+                topics = review[4].split(",\\s*"); // split by comma and optional spaces
+            }
+
+            String[] adjectives;
+            if (review[5].equals("NO_ADJECTIVES")) {
+                adjectives = new String[0];
+            } else {
+                adjectives = review[5].split(",\\s*"); // split by comma and optional spaces
+            }
 
             // get ProductSummary for this asin, create a new one if it does not exist
             ProductSummary productReview = asinToProductMap.get(asin);
             if (productReview == null) {
                 productReview = new ProductSummary(category, asin);
                 asinToProductMap.put(asin, productReview);
+                System.out.println("Created new ProductSummary for ASIN: " + asin);
             }
 
             // add review data to ProductSummary
             productReview.addReview(overallScore, sentiment, topics, adjectives);
+            System.out.println("Added review data to ProductSummary for ASIN: " + asin);
         }
+
+        System.out.println("Finished categorization process.");
     }
 
     public Map<String, List<ProductSummary>> getCategorizedResults() {
+        System.out.println("Compiling categorized results...");
+
         // map to store categorized results by category
         Map<String, List<ProductSummary>> categorizedResults = new LinkedHashMap<>();
 
@@ -40,8 +60,11 @@ public class Categorizer {
                 categorizedResults.put(product.getCategory(), productList);
             }
             productList.add(product);
+            //System.out.println("Categorized ProductSummary under category: " + product.getCategory());
+            //System.out.println("ProductSummary Details: " + product);
         }
 
+        System.out.println("Categorized results compiled.");
         return categorizedResults;
     }
 
@@ -108,7 +131,6 @@ public class Categorizer {
             }
         }
 
-
         public List<String> getTopTopics(int limit) {
             // convert map entries (topic, count) into a list
             List<Map.Entry<String, Integer>> sortedEntries = new ArrayList<>(topicCounts.entrySet());
@@ -145,9 +167,8 @@ public class Categorizer {
             return topAdjectives;
         }
 
-
         public String[] toResultArray() {
-            // convert top topics and adjectives to comma-separated strings
+            // convert top topics and adjectives to strings separated by commas
             String topTopicsStr = String.join(", ", getTopTopics(10));
             String topAdjectivesStr = String.join(", ", getTopAdjectives(10));
 

@@ -21,7 +21,7 @@ public class SentimentAnalyzer {
         List<String[]> analyzedData = new ArrayList<>();
 
         for (String[] data : cleanedData) {
-            String reviewText = data[3]; // reviewText is the 4th element in the arr
+            String reviewText = data[3]; // reviewText is the 4th element in the array
 
             // annotate review text
             Annotation annotation = new Annotation(reviewText);
@@ -35,9 +35,20 @@ public class SentimentAnalyzer {
             List<String> adjectives = new ArrayList<>();
             extractTopicsAndAdjectives(annotation, topics, adjectives);
 
-            // convert topics and adjectives lists to strings
-            String topicsStr = String.join(", ", topics);
-            String adjectivesStr = String.join(", ", adjectives);
+            // handle scenario where no topics/adjectives are found
+            String topicsStr;
+            if (topics.isEmpty()) {
+                topicsStr = "NO_TOPICS";
+            } else {
+                topicsStr = String.join(", ", topics);
+            }
+
+            String adjectivesStr;
+            if (adjectives.isEmpty()) {
+                adjectivesStr = "NO_ADJECTIVES";
+            } else {
+                adjectivesStr = String.join(", ", adjectives);
+            }
 
             // combining all extracted data into a new array
             String[] analyzedArray = new String[]{
@@ -56,7 +67,7 @@ public class SentimentAnalyzer {
     }
 
     private int extractSentiment(Annotation annotation) {
-        // extract sentiment value (0-4) for the sentences within review
+        // extract sentiment value (0-4) for the sentences within the review
         int sentimentScore = 0;
         int totalSentences = 0;
 

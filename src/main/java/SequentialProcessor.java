@@ -18,14 +18,17 @@ public class SequentialProcessor {
         // step 1: clean data
         DataCleaner cleaner = new DataCleaner(buffer);
         List<String[]> cleanedData = cleaner.extractAndCleanData(maxReviews);
+        System.out.println("Cleaning complete...");
 
         // step 2: perform sentiment analysis
         SentimentAnalyzer sentimentAnalyzer = new SentimentAnalyzer();
         List<String[]> analyzedData = sentimentAnalyzer.analyzeData(cleanedData);
+        System.out.println("Sentiment analysis complete...");
 
         // step 3: categorize data
         Categorizer categorizer = new Categorizer();
         categorizer.categorizeReviews(analyzedData);
+        System.out.println("Categorization complete...");
 
         // step 4: retrieve and display data
         Map<String, List<Categorizer.ProductSummary>> categorizedData = categorizer.getCategorizedResults();
